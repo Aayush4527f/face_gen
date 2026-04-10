@@ -14,3 +14,8 @@ v2.3 ===>
 Let's get serious now
 ok, this time I got actually good training curves, let's use a better lr scheduler
 shifting from step on plateu to cosinesomebs
+
+v2.4 ==>
+Shifted to cosineannealing but it seems worse for some reason
+also added augmentation (horizontal flip)
+
