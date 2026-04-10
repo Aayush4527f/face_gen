@@ -38,4 +38,10 @@ LIKE A COLOR LOSS FOR 2 DIM, SSIM FOR SOME, MSE FOR SOME ETC
 ========================================================================================================================
 
 start v3
-goal:
+goal: well, implement and try the ideas from earlier
+
+v3.1 => added upscaling instead of convtranspose2d and l1 loss on lab
+also tried increasing size of linear layer but removed for now
+results and observations => now the images are much more vibrant
+adding more capabilites in the hidden layer makes disfigured faces because it finds shortcuts
+need to add a better loss function for a better model (golden line)

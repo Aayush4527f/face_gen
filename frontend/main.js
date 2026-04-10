@@ -1,6 +1,6 @@
 import * as ort from 'onnxruntime-web';
 
-const LATENT_DIM = 8;
+const LATENT_DIM = 16;
 let session = null;
 let isGenerating = false;
 
@@ -102,7 +102,7 @@ async function initModel() {
   try {
     // Determine automatically or set path implicitly
     // We copied the model files to /decoder.onnx serving public output.
-    session = await ort.InferenceSession.create('/decoder_baseline.onnx', { executionProviders: ['wasm'] });
+    session = await ort.InferenceSession.create('/decoderv3.1.onnx', { executionProviders: ['wasm'] });
     
     console.log('Model loaded successfully');
     overlay.classList.remove('active');
