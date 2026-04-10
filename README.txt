@@ -25,6 +25,7 @@ even adding attention to the 3x3 layer just made it blurry and disfigured
 
 for now 2.2 is best in this architecture
 
+v2 FINAL============================================================================================================================================================
 gotta change the loss function so that colors are more accurate maybe adding l1 loss in lab (a and b color axes)
 atleast once I wanna try out ViT full dense layer
 try adding upsampling to decoder
@@ -34,3 +35,7 @@ add more linear layers instead of 2304 -> 16, maybe 2304->1152->16 or 2304->4608
 MASSIVE IDEA!!! ==>
 WHAT IF WE HAVE DIFFERENT LOSS FUNCTION FOR DIFF LATENT
 LIKE A COLOR LOSS FOR 2 DIM, SSIM FOR SOME, MSE FOR SOME ETC
+========================================================================================================================
+
+start v3
+goal:
