@@ -1,0 +1,7 @@
+*.pth
+*.onnx
+*.onnx.data
+anime_faces/train/all/*.jpg
+anime_faces/val/all/*.jpg
+v1/Data/all/*.png
+*.zip
