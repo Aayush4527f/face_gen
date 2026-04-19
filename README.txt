@@ -49,3 +49,16 @@ need to add a better loss function for a better model (golden line)
 v3.2 => added GAN and it works, did not test it, will test after adding resnet blocks in 3.3
 
 v3.3 => adversarial network too powerful, beta was too small, linear bottleneck and should do two seperate forward passes instead
+
+v3.4 => reduced disc to 3 layer
+        increased beta
+        added two linear layers
+        seperate forward pass to reduce error
+
+    
+Now the model is much better, but idk how much of it is because of gan or resnet?
+the kld needs some work, it has to be a bit more lower and I will train it to be 
+also the scheduler will be updated because rn the lr is constant mostly
+also haven't yet tried the idea that I had
+
+will compare after removing GAN and keeping only resnet then move to the idea execution
