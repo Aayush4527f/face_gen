@@ -45,3 +45,6 @@ also tried increasing size of linear layer but removed for now
 results and observations => now the images are much more vibrant
 adding more capabilites in the hidden layer makes disfigured faces because it finds shortcuts
 need to add a better loss function for a better model (golden line)
+
+v3.2 => added GAN and it works, did not test it, will test after adding resnet blocks in 3.3
+
