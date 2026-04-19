@@ -48,3 +48,4 @@ need to add a better loss function for a better model (golden line)
 
 v3.2 => added GAN and it works, did not test it, will test after adding resnet blocks in 3.3
 
+v3.3 => adversarial network too powerful, beta was too small, linear bottleneck and should do two seperate forward passes instead
