@@ -62,3 +62,21 @@ also the scheduler will be updated because rn the lr is constant mostly
 also haven't yet tried the idea that I had
 
 will compare after removing GAN and keeping only resnet then move to the idea execution
+
+
+v3.5 => compared gan and without gan, gan makes some difference idk what exactly lol, the image looks more noisy now
+still there are many issues =>
+1. both kld and reconstruction are high
+2. model is stuck during training
+3. still very blurry images
+
+actually this specific gan makes the model worse, even with very low adv_weight, the model is stuck during training
+
+final things to try =>
+1. replace batchnorm with layernorm
+2. lpips instead of ssim
+3. increase discriminator layer till 3x3
+4. adv_weight warmup
+5. logvar clamping
+6. better beta warmup
+

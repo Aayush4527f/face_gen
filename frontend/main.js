@@ -102,7 +102,7 @@ async function initModel() {
   try {
     // Determine automatically or set path implicitly
     // We copied the model files to /decoder.onnx serving public output.
-    session = await ort.InferenceSession.create('/decoderv3.4.onnx', { executionProviders: ['wasm'] });
+    session = await ort.InferenceSession.create('/decoderv3.5.onnx', { executionProviders: ['wasm'] });
     
     console.log('Model loaded successfully');
     overlay.classList.remove('active');
