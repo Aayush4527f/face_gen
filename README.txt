@@ -80,3 +80,11 @@ final things to try =>
 5. logvar clamping
 6. better beta warmup
 
+
+things learned =>       lpips + l1 is a good combo
+                        logvar should always be clamped to avoid posterior collaspe later
+                        learning rate scheduler plays a very vital role in training.... very vital, fuck that up and get fucked
+                        
+v3.6 => trained the model with better LR (manually, gotta find some solution for that), the 16 dim seems to be the bottleneck now
+added clamping to the logvar and found out that the learning rate needed to be wayyy lower
+also during this version I tried every single thing like resnet or not, lr high or not, beta values, loss functions etc etc to verify everything
