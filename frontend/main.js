@@ -102,7 +102,7 @@ async function initModel() {
   try {
     // Determine automatically or set path implicitly
     // We copied the model files to /decoder.onnx serving public output.
-    session = await ort.InferenceSession.create('/decoderv3.6.8.onnx', { executionProviders: ['wasm'] });
+    session = await ort.InferenceSession.create('/decoderv4.onnx', { executionProviders: ['wasm'] });
     
     console.log('Model loaded successfully');
     overlay.classList.remove('active');
@@ -144,8 +144,8 @@ async function generateImage() {
 
 // Paint pixel colors
 function renderToCanvas(data) {
-  const width = 48;
-  const height = 48;
+  const width = 64;
+  const height = 64;
   const spatialSize = width * height;
   
   const imgData = ctx.createImageData(width, height);

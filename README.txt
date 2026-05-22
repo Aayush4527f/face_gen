@@ -88,3 +88,17 @@ things learned =>       lpips + l1 is a good combo
 v3.6 => trained the model with better LR (manually, gotta find some solution for that), the 16 dim seems to be the bottleneck now
 added clamping to the logvar and found out that the learning rate needed to be wayyy lower
 also during this version I tried every single thing like resnet or not, lr high or not, beta values, loss functions etc etc to verify everything
+
+
+v4 => fixes to try finallll
+1. fix the logvar clamping, it was too tight -20 to 20 (done)
+2. do not average the kld over all dimensions, sum it up (done)
+3. tune the adam beta values for optimizer (done)
+4. increase LR (done)
+5. use lsgan instead of normal bce_with_logits (done)
+6. remove intermediate linear layers (done)
+7. add discriminator delay (done)
+8. add horizontal flip (done)
+9. switch to bilinear upsampling and add GroupNorm to ResUpBlock shortcuts (done)
+
+GOOD RESULTS FINALLY!!!
