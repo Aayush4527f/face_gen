@@ -5,82 +5,175 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BetaVAE Face Generator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>BetaVAE-GAN Face Generator & Latent Space Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
   <div class="app-container">
     <header class="header">
-      <h1>BetaVAE Visualizer</h1>
-      <p>Explore & Reconstruct the 16-dimensional latent space</p>
+      <div class="header-main-row">
+        <h1>BetaVAE-GAN Face Generator & Latent Space Explorer</h1>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark/light mode">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+        </button>
+      </div>
+      <p>Interactive Research Demo &bull; BetaVAE-GAN Hybrid Model Release (v4.1)</p>
     </header>
 
-    <main class="main-content">
-      <aside class="controls-panel">
-        <div class="tabs-nav">
-          <button id="tab-sliders" class="tab-btn active">Manual Sliders</button>
-          <button id="tab-encoder" class="tab-btn">Image Encoder</button>
-        </div>
+    <article class="doc-body">
+      <!-- Section 1: Introduction -->
+      <section class="doc-section intro-section">
+        <p>
+          This repository chronicles the development and iterative optimization of a 
+          <strong>BetaVAE-GAN hybrid model</strong> engineered to compress high-dimensional face image data 
+          into a lean, disentangled <strong>16-dimensional latent space</strong>. The final architecture (v4.1) 
+          balances structured latent topography with sharp, high-fidelity reconstructions by combining 
+          pixel-level L1 loss in LAB color space, VGG-based LPIPS perceptual loss, and a Least Squares GAN (LSGAN) discriminator loop.
+        </p>
+      </section>
 
-        <!-- Sliders Tab Pane -->
-        <div id="pane-sliders" class="tab-pane active">
-          <div class="controls-header">
-            <h2>Latent Dimensions</h2>
-            <div class="btn-group">
-              <button id="randomize-btn" class="btn randomize-btn">Randomize</button>
-              <button id="reset-btn" class="btn reset-btn">Reset All</button>
+      <!-- Section 2: Interactive Visualizer (The main grid) -->
+      <section class="doc-section visualizer-section">
+        <h2>Interactive Latent Space Explorer</h2>
+        <p class="section-description">
+          Interact with the VAE decoder by sliding the latent factors below, or upload a custom face image to the encoder to project it onto the 16-D manifold and see how the model reconstructs it.
+        </p>
+
+        <main class="main-content">
+          <aside class="controls-panel">
+            <div class="tabs-nav">
+              <button id="tab-sliders" class="tab-btn active">Manual Sliders</button>
+              <button id="tab-encoder" class="tab-btn">Image Encoder</button>
             </div>
-          </div>
-          <div id="sliders-container" class="sliders-groups-container">
-            <!-- Sliders grouped in collapsible categories by JS -->
-          </div>
-        </div>
 
-        <!-- Encoder Tab Pane -->
-        <div id="pane-encoder" class="tab-pane">
-          <div class="controls-header">
-            <h2>Image Encoder</h2>
-            <p class="pane-subtitle">Upload any face image to map it back to the 16-D latent space.</p>
-          </div>
-          <div class="upload-area" id="upload-area">
-            <div class="upload-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            </div>
-            <p>Drag & drop face image or <strong>browse files</strong></p>
-            <input type="file" id="image-loader" accept="image/*" />
-          </div>
-          <div id="encoder-feedback" class="encoder-feedback-msg" style="display: none;"></div>
-        </div>
-      </aside>
-
-      <section class="viewport">
-        <div class="comparison-container">
-          <div class="viewport-box reconstruction-box">
-            <span class="box-label">VAE Reconstruction</span>
-            <div class="glass-panel">
-              <div id="loading-overlay" class="overlay active">
-                <div class="spinner"></div>
-                <p>Loading Models...</p>
+            <!-- Sliders Tab Pane -->
+            <div id="pane-sliders" class="tab-pane active">
+              <div class="controls-header">
+                <h2>Latent Dimensions</h2>
+                <div class="btn-group">
+                  <button id="randomize-btn" class="btn randomize-btn">Randomize</button>
+                  <button id="reset-btn" class="btn reset-btn">Reset All</button>
+                </div>
               </div>
-              <canvas id="output-canvas" width="64" height="64"></canvas>
-            </div>
-          </div>
-          
-          <div class="viewport-box input-box">
-            <span class="box-label">Original Input</span>
-            <div class="glass-panel">
-              <div id="input-placeholder" class="image-placeholder">
-                <p>No Image Uploaded</p>
+
+              <!-- Semantic Direction Controllers -->
+              <div class="semantic-controls">
+                <div class="slider-container special-slider">
+                  <div class="slider-label-row">
+                    <span class="special-label">
+                      Facing Direction (Left ⟷ Right)
+                      <button id="info-btn" class="info-btn" aria-label="View direction vector">ℹ</button>
+                    </span>
+                    <span id="val-facing" class="slider-val special-val">0.00</span>
+                  </div>
+                  <input type="range" id="control-facing" min="-3.0" max="3.0" step="0.1" value="0.0" />
+                </div>
               </div>
-              <img id="input-preview" class="input-preview-image" style="display: none;" alt="Original face input" />
+
+              <div id="sliders-container" class="sliders-groups-container">
+                <!-- Sliders grouped in collapsible categories by JS -->
+              </div>
             </div>
-          </div>
+
+            <!-- Encoder Tab Pane -->
+            <div id="pane-encoder" class="tab-pane">
+              <div class="controls-header">
+                <h2>Image Encoder</h2>
+                <p class="pane-subtitle">Upload any face image to map it back to the 16-D latent space.</p>
+              </div>
+              <div class="upload-area" id="upload-area">
+                <div class="upload-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </div>
+                <p>Drag & drop face image or <strong>browse files</strong></p>
+                <input type="file" id="image-loader" accept="image/*" />
+              </div>
+              <div id="encoder-feedback" class="encoder-feedback-msg" style="display: none;"></div>
+            </div>
+          </aside>
+
+          <section class="viewport">
+            <div class="comparison-container">
+              <div class="viewport-box reconstruction-box">
+                <span class="box-label">VAE Reconstruction</span>
+                <div class="glass-panel">
+                  <div id="loading-overlay" class="overlay active">
+                    <div class="spinner"></div>
+                    <p>Loading Models...</p>
+                  </div>
+                  <canvas id="output-canvas" width="64" height="64"></canvas>
+                </div>
+              </div>
+              
+              <div class="viewport-box input-box">
+                <span class="box-label">Original Input</span>
+                <div class="glass-panel">
+                  <div id="input-placeholder" class="image-placeholder">
+                    <p>No Image Uploaded</p>
+                  </div>
+                  <img id="input-preview" class="input-preview-image" style="display: none;" alt="Original face input" />
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </section>
+
+      <!-- Section 2.5: Semantic Vector Sub-explanation -->
+      <section class="doc-section vector-info-section">
+        <h2>How the Facing Direction Slider Works</h2>
+        <p>
+          Instead of modifying a single latent coordinate axis, the <strong>Facing Direction</strong> slider applies a macro shift across all 16 dimensions simultaneously. 
+          By taking the difference vector <strong>v</strong> between left-facing and right-facing face clusters in the training set, we define a continuous edit path. 
+          Adjusting this slider updates the manual coordinates by shifting the active latent point <strong>z</strong><sub>new</sub> = <strong>z</strong><sub>base</sub> + &alpha;<strong>v</strong>, 
+          instantly reflecting the changes on the 16 manual sliders so you can see how individual latent values translate along the orientation boundary.
+        </p>
+      </section>
+
+      <!-- Section 3: Training Curves -->
+      <section class="doc-section curves-section">
+        <h2>Model Optimization & Training History</h2>
+        <p>
+          The training process uses a constant learning rate, log-variance clamping, and a delayed adversarial loop warm-up. 
+          This prevents early posterior collapse and balances reconstruction fidelity against GAN noise.
+        </p>
+        <div class="media-box">
+          <img src="/v4.1_training_curves.png" alt="v4.1 Training Curves" class="curves-img" />
+          <span class="caption">Figure 1: Loss curves for generator and discriminator across epochs. Perceptual LPIPS combined with LAB L1 losses guide the reconstruction to prevent washing out colors.</span>
         </div>
       </section>
-    </main>
+
+      <!-- Section 4: Log / Readme -->
+      <section class="doc-section log-section">
+        <h2>Appendix: Repository readme.txt & Iterative Dev Log</h2>
+        <p>Below is the raw chronological developer notes and readme.txt content fetched directly from the repository code base.</p>
+        <pre class="raw-log" id="raw-log-container">Loading development log...</pre>
+      </section>
+    </article>
+
+    <footer class="doc-footer">
+      <p>
+        Explore the code on GitHub: 
+        <a class="highlight-link" href="https://github.com/aayush4527f/face_gen" target="_blank" rel="noopener noreferrer">github.com/aayush4527f/face_gen</a>
+      </p>
+    </footer>
   </div>
+
+  <!-- Modal Dialog for Vector Info -->
+  <div id="vector-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Semantic Direction Vector</h3>
+        <span id="close-modal" class="close-modal">&times;</span>
+      </div>
+      <p class="modal-desc">This 16-dimensional vector was extracted by finding the linear separating boundary between left-facing and right-facing face sets in the latent space. Adjusting this slider moves the latent coordinates along this specific vector path:</p>
+      <pre><code id="vector-code"></code></pre>
+    </div>
+  </div>
+
   <script type="module" src="/main.js"></script>
 </body>
 

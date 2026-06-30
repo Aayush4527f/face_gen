@@ -122,8 +122,6 @@ next big step: working on that idea of seperate dimensions for features in the l
 
 
 
-DEPLOYMENT UPDATE, ADDED A LEFT FACING AND RIGHT FACING VECTOR FOR DEMONSTRATION AND IMPROVED WEBSITE
-
 
 
 

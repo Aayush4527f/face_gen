@@ -8,6 +8,16 @@ let isGenerating = false;
 // Initialize state to 0 for all latent dimensions
 const latentSpace = new Float32Array(LATENT_DIM).fill(0);
 
+// Facing direction vector (extracted left ⟷ right facing control)
+const FACING_DIRECTION_VECTOR = [
+  0.2899738848209381, 0.009440995752811432, -0.026998644694685936, 0.19809047877788544,
+  -0.14305420219898224, -0.5916984677314758, 0.16607166826725006, 0.27834460139274597,
+  -0.1228371188044548, 0.15463581681251526, -0.049575693905353546, -0.16682018339633942,
+  0.038495831191539764, -0.5326293706893921, -0.17295007407665253, -0.125915065407753
+];
+let facingValue = 0.0;
+let oldFacingValue = 0.0;
+
 // DOM Elements
 const slidersContainer = document.getElementById('sliders-container');
 const randomizeBtn = document.getElementById('randomize-btn');
@@ -15,6 +25,10 @@ const resetBtn = document.getElementById('reset-btn');
 const canvas = document.getElementById('output-canvas');
 const ctx = canvas.getContext('2d');
 const overlay = document.getElementById('loading-overlay');
+
+// Semantic Controls DOM Elements
+const controlFacing = document.getElementById('control-facing');
+const valFacing = document.getElementById('val-facing');
 
 // Tab Navigation Elements
 const tabSliders = document.getElementById('tab-sliders');
@@ -47,6 +61,36 @@ tabEncoder.addEventListener('click', () => {
   paneSliders.classList.remove('active');
 });
 
+// Facing Direction Slider Listener
+controlFacing.addEventListener('input', (e) => {
+  facingValue = parseFloat(e.target.value);
+  valFacing.innerText = facingValue.toFixed(2);
+  
+  const delta = facingValue - oldFacingValue;
+  oldFacingValue = facingValue;
+
+  // Apply delta across base dimensions and update manual slider positions in DOM
+  for (let i = 0; i < LATENT_DIM; i++) {
+    const bounds = sliderBounds[i];
+    let val = latentSpace[i] + delta * FACING_DIRECTION_VECTOR[i];
+    val = Math.max(bounds.min, Math.min(bounds.max, val));
+    latentSpace[i] = val;
+
+    // Update DOM inputs and value labels
+    const inputEl = slidersContainer.querySelector(`input[data-index="${i}"]`);
+    if (inputEl) {
+      inputEl.value = val.toString();
+    }
+    const valDisplay = document.getElementById(`val-${i}`);
+    if (valDisplay) {
+      valDisplay.innerText = val.toFixed(2);
+    }
+  }
+  
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(generateImage);
+});
+
 // Custom bounds for each of the 16 latent dimensions
 const sliderBounds = [
   { min: -3.0, max: 3.0 },
@@ -73,7 +117,7 @@ function createSliders() {
   // Create details tag for the entire flat list of sliders
   const groupDetails = document.createElement('details');
   groupDetails.className = 'sliders-group';
-  groupDetails.setAttribute('open', ''); // Opened by default
+  // Kept collapsed/closed by default
   
   // Create summary tag
   const groupSummary = document.createElement('summary');
@@ -119,6 +163,12 @@ function createSliders() {
       valDisplay.innerText = val.toFixed(2);
       latentSpace[i] = val;
       
+      // Reset facing slider base reference since user is manual tuning
+      facingValue = 0.0;
+      oldFacingValue = 0.0;
+      if (controlFacing) controlFacing.value = '0.0';
+      if (valFacing) valFacing.innerText = '0.00';
+      
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(generateImage);
     });
@@ -157,6 +207,12 @@ randomizeBtn.addEventListener('click', () => {
     if (valDisplay) valDisplay.innerText = val.toFixed(2);
   });
   
+  // Reset facing slider on randomize
+  facingValue = 0.0;
+  oldFacingValue = 0.0;
+  controlFacing.value = '0.0';
+  valFacing.innerText = '0.00';
+  
   if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(generateImage);
 });
@@ -164,6 +220,13 @@ randomizeBtn.addEventListener('click', () => {
 // Reset all sliders back to mean (0)
 resetBtn.addEventListener('click', () => {
   latentSpace.fill(0);
+  
+  // Reset facing slider on reset
+  facingValue = 0.0;
+  oldFacingValue = 0.0;
+  controlFacing.value = '0.0';
+  valFacing.innerText = '0.00';
+  
   const inputs = slidersContainer.querySelectorAll('input');
   inputs.forEach((input) => {
     const i = parseInt(input.dataset.index);
@@ -209,6 +272,7 @@ async function generateImage() {
   isGenerating = true;
 
   try {
+    // Decode base latentSpace array directly (which in-turn gets edited by semantic sliders)
     const tensorBuffer = Float32Array.from(latentSpace);
     const tensor = new ort.Tensor('float32', tensorBuffer, [1, LATENT_DIM]);
 
@@ -371,6 +435,12 @@ function processFile(file) {
           }
         }
         
+        // Reset facing slider on new image encoding (since it is already baked into zData)
+        facingValue = 0.0;
+        oldFacingValue = 0.0;
+        controlFacing.value = '0.0';
+        valFacing.innerText = '0.00';
+        
         // 8. Reconstruct image using decoder
         await generateImage();
         showFeedback('Success! Face encoded and reconstructed.', 'success');
@@ -382,7 +452,72 @@ function processFile(file) {
   };
 }
 
+// Modal Event Listeners
+const infoBtn = document.getElementById('info-btn');
+const vectorModal = document.getElementById('vector-modal');
+const closeModal = document.getElementById('close-modal');
+const vectorCode = document.getElementById('vector-code');
+
+if (infoBtn && vectorModal && closeModal && vectorCode) {
+  // Show vector values formatted in list
+  vectorCode.innerText = JSON.stringify(FACING_DIRECTION_VECTOR, null, 2);
+  
+  infoBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    vectorModal.classList.add('active');
+  });
+  
+  closeModal.addEventListener('click', () => {
+    vectorModal.classList.remove('active');
+  });
+  
+  // Close modal on click outside content
+  window.addEventListener('click', (event) => {
+    if (event.target === vectorModal) {
+      vectorModal.classList.remove('active');
+    }
+  });
+}
+
+// Dynamic loader for the raw README.txt log file
+async function loadReadmeLog() {
+  const container = document.getElementById('raw-log-container');
+  if (!container) return;
+  try {
+    const response = await fetch('/README.txt');
+    if (!response.ok) throw new Error('File not found');
+    const text = await response.text();
+    container.innerText = text;
+  } catch (err) {
+    console.error('Failed to load README.txt', err);
+    container.innerText = 'Failed to load chronological log file. Check console details.';
+  }
+}
+
+// Dark Mode Toggle Logic
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+  const savedTheme = localStorage.getItem('theme');
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+    document.documentElement.classList.add('dark-theme');
+    document.body.classList.add('dark-theme');
+  } else {
+    document.documentElement.classList.remove('dark-theme');
+    document.body.classList.remove('dark-theme');
+  }
+  
+  themeToggle.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark-theme');
+    document.body.classList.toggle('dark-theme');
+    const isDark = document.documentElement.classList.contains('dark-theme');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  });
+}
+
 // Boot up sequence
 createSliders();
 initModel();
+loadReadmeLog();
 
