@@ -1,3 +1,8 @@
+Visit: https://facegenvae.vercel.app/ for interactive web app
+
+
+This repository chronicles the development and iterative optimization of a BetaVAE-GAN hybrid model engineered to compress high-dimensional face image data into a lean, disentangled 16-dimensional latent space. The final architecture (v4.1) balances structured latent topography with sharp, high-fidelity reconstructions by combining pixel-level L1 loss in LAB color space, VGG-based LPIPS perceptual loss, and a Least Squares GAN (LSGAN) discriminator loop. 
+
 v2 goal => create a good baseline model having pure cnn+mlp, no resnet etc
 
 v2.1 ===>
