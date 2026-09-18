@@ -71,6 +71,16 @@
                   </div>
                   <input type="range" id="control-facing" min="-3.0" max="3.0" step="0.1" value="0.0" />
                 </div>
+                <div class="slider-container special-slider">
+                  <div class="slider-label-row">
+                    <span class="special-label">
+                      Hair Color (Red ⟷ Black)
+                      <button id="info-btn-hair" class="info-btn" aria-label="View direction vector">ℹ</button>
+                    </span>
+                    <span id="val-hair" class="slider-val special-val">0.00</span>
+                  </div>
+                  <input type="range" id="control-hair" min="-3.0" max="3.0" step="0.1" value="0.0" />
+                </div>
               </div>
 
               <div id="sliders-container" class="sliders-groups-container">
@@ -169,7 +179,7 @@
         <h3>Semantic Direction Vector</h3>
         <span id="close-modal" class="close-modal">&times;</span>
       </div>
-      <p class="modal-desc">This 16-dimensional vector was extracted by finding the linear separating boundary between left-facing and right-facing face sets in the latent space. Adjusting this slider moves the latent coordinates along this specific vector path:</p>
+      <p class="modal-desc" id="modal-desc">This 16-dimensional vector was extracted by finding the linear separating boundary between left-facing and right-facing face sets in the latent space. Adjusting this slider moves the latent coordinates along this specific vector path:</p>
       <pre><code id="vector-code"></code></pre>
     </div>
   </div>

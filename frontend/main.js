@@ -18,6 +18,16 @@ const FACING_DIRECTION_VECTOR = [
 let facingValue = 0.0;
 let oldFacingValue = 0.0;
 
+// Hair color vector (red ⟷ black, 23+23 hand labels, stability 0.996 at n=20)
+const HAIR_DIRECTION_VECTOR = [
+  0.620242, 0.102079, -0.246178, -0.171226,
+  0.031110, 0.060603, 0.165961, -0.056474,
+  -0.591877, 0.176501, -0.070961, 0.100335,
+  -0.039658, 0.262062, 0.067697, -0.090439
+];
+let hairValue = 0.0;
+let oldHairValue = 0.0;
+
 // DOM Elements
 const slidersContainer = document.getElementById('sliders-container');
 const randomizeBtn = document.getElementById('randomize-btn');
@@ -29,6 +39,8 @@ const overlay = document.getElementById('loading-overlay');
 // Semantic Controls DOM Elements
 const controlFacing = document.getElementById('control-facing');
 const valFacing = document.getElementById('val-facing');
+const controlHair = document.getElementById('control-hair');
+const valHair = document.getElementById('val-hair');
 
 // Tab Navigation Elements
 const tabSliders = document.getElementById('tab-sliders');
@@ -61,18 +73,11 @@ tabEncoder.addEventListener('click', () => {
   paneSliders.classList.remove('active');
 });
 
-// Facing Direction Slider Listener
-controlFacing.addEventListener('input', (e) => {
-  facingValue = parseFloat(e.target.value);
-  valFacing.innerText = facingValue.toFixed(2);
-  
-  const delta = facingValue - oldFacingValue;
-  oldFacingValue = facingValue;
-
-  // Apply delta across base dimensions and update manual slider positions in DOM
+// Shared: shift latent point along a direction vector by a delta, clamp to bounds
+function shiftLatent(vector, delta) {
   for (let i = 0; i < LATENT_DIM; i++) {
     const bounds = sliderBounds[i];
-    let val = latentSpace[i] + delta * FACING_DIRECTION_VECTOR[i];
+    let val = latentSpace[i] + delta * vector[i];
     val = Math.max(bounds.min, Math.min(bounds.max, val));
     latentSpace[i] = val;
 
@@ -86,9 +91,40 @@ controlFacing.addEventListener('input', (e) => {
       valDisplay.innerText = val.toFixed(2);
     }
   }
-  
+
   if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(generateImage);
+}
+
+function resetDirectionSliders() {
+  facingValue = 0.0;
+  oldFacingValue = 0.0;
+  hairValue = 0.0;
+  oldHairValue = 0.0;
+  if (controlFacing) controlFacing.value = '0.0';
+  if (valFacing) valFacing.innerText = '0.00';
+  if (controlHair) controlHair.value = '0.0';
+  if (valHair) valHair.innerText = '0.00';
+}
+
+// Facing Direction Slider Listener
+controlFacing.addEventListener('input', (e) => {
+  facingValue = parseFloat(e.target.value);
+  valFacing.innerText = facingValue.toFixed(2);
+
+  const delta = facingValue - oldFacingValue;
+  oldFacingValue = facingValue;
+  shiftLatent(FACING_DIRECTION_VECTOR, delta);
+});
+
+// Hair Color Slider Listener (red ⟷ black)
+controlHair.addEventListener('input', (e) => {
+  hairValue = parseFloat(e.target.value);
+  valHair.innerText = hairValue.toFixed(2);
+
+  const delta = hairValue - oldHairValue;
+  oldHairValue = hairValue;
+  shiftLatent(HAIR_DIRECTION_VECTOR, delta);
 });
 
 // Custom bounds for each of the 16 latent dimensions
@@ -163,11 +199,7 @@ function createSliders() {
       valDisplay.innerText = val.toFixed(2);
       latentSpace[i] = val;
       
-      // Reset facing slider base reference since user is manual tuning
-      facingValue = 0.0;
-      oldFacingValue = 0.0;
-      if (controlFacing) controlFacing.value = '0.0';
-      if (valFacing) valFacing.innerText = '0.00';
+      resetDirectionSliders();
       
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(generateImage);
@@ -207,11 +239,7 @@ randomizeBtn.addEventListener('click', () => {
     if (valDisplay) valDisplay.innerText = val.toFixed(2);
   });
   
-  // Reset facing slider on randomize
-  facingValue = 0.0;
-  oldFacingValue = 0.0;
-  controlFacing.value = '0.0';
-  valFacing.innerText = '0.00';
+  resetDirectionSliders();
   
   if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(generateImage);
@@ -221,11 +249,7 @@ randomizeBtn.addEventListener('click', () => {
 resetBtn.addEventListener('click', () => {
   latentSpace.fill(0);
   
-  // Reset facing slider on reset
-  facingValue = 0.0;
-  oldFacingValue = 0.0;
-  controlFacing.value = '0.0';
-  valFacing.innerText = '0.00';
+  resetDirectionSliders();
   
   const inputs = slidersContainer.querySelectorAll('input');
   inputs.forEach((input) => {
@@ -435,11 +459,7 @@ function processFile(file) {
           }
         }
         
-        // Reset facing slider on new image encoding (since it is already baked into zData)
-        facingValue = 0.0;
-        oldFacingValue = 0.0;
-        controlFacing.value = '0.0';
-        valFacing.innerText = '0.00';
+        resetDirectionSliders();
         
         // 8. Reconstruct image using decoder
         await generateImage();
@@ -459,13 +479,26 @@ const closeModal = document.getElementById('close-modal');
 const vectorCode = document.getElementById('vector-code');
 
 if (infoBtn && vectorModal && closeModal && vectorCode) {
-  // Show vector values formatted in list
-  vectorCode.innerText = JSON.stringify(FACING_DIRECTION_VECTOR, null, 2);
-  
+  const modalDesc = document.getElementById('modal-desc');
+  const infoBtnHair = document.getElementById('info-btn-hair');
+  const FACING_DESC = 'This 16-dimensional vector was extracted by finding the linear separating boundary between left-facing and right-facing face sets in the latent space. Adjusting this slider moves the latent coordinates along this specific vector path:';
+  const HAIR_DESC = 'This 16-dimensional vector was extracted by finding the linear separating boundary between red-haired and black-haired face sets (23+23 hand labels, stability 0.996 at n=20). Adjusting this slider moves the latent coordinates along this specific vector path:';
+
   infoBtn.addEventListener('click', (e) => {
     e.preventDefault();
+    vectorCode.innerText = JSON.stringify(FACING_DIRECTION_VECTOR, null, 2);
+    if (modalDesc) modalDesc.innerText = FACING_DESC;
     vectorModal.classList.add('active');
   });
+
+  if (infoBtnHair) {
+    infoBtnHair.addEventListener('click', (e) => {
+      e.preventDefault();
+      vectorCode.innerText = JSON.stringify(HAIR_DIRECTION_VECTOR, null, 2);
+      if (modalDesc) modalDesc.innerText = HAIR_DESC;
+      vectorModal.classList.add('active');
+    });
+  }
   
   closeModal.addEventListener('click', () => {
     vectorModal.classList.remove('active');
